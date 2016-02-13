@@ -5,6 +5,7 @@ This module contains the controller and key handling logic of turses.
 """
 from builtins import object
 
+import os
 import signal
 import logging
 from gettext import gettext as _
@@ -1317,6 +1318,9 @@ class Controller(Observer):
         # The webbrowser module respects the BROWSER environment variable,
         # so if that's set, it'll use it, otherwise it will try to find
         # something sensible
+        savout = os.dup(1)
+        os.close(1)
+        os.open(os.devnull, os.O_RDWR)
         try:
             # Firefox, w3m, etc can't handle multiple URLs at command line, so
             # split the URLs up for them
@@ -1325,3 +1329,6 @@ class Controller(Observer):
         except Exception as message:
             logging.exception(message)
             self.error_message(_('Unable to launch the browser'))
+        finally:
+            os.dup2(savout, 1)
+            os.close(savout)
